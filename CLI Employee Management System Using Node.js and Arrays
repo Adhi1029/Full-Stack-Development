@@ -1,0 +1,115 @@
+import React, { useState } from "react";
+
+export default function EmployeeManagement() {
+  const [employees, setEmployees] = useState([
+  ]);
+
+  const [screen, setScreen] = useState("menu");
+  const [newName, setNewName] = useState("");
+  const [newId, setNewId] = useState("");
+  const [removeId, setRemoveId] = useState("");
+  const [message, setMessage] = useState("");
+
+  const addEmployee = () => {
+    if (newName && newId) {
+      setEmployees([...employees, { name: newName, id: newId }]);
+      setMessage(`Employee ${newName} (ID: ${newId}) added successfully.`);
+      setNewName("");
+      setNewId("");
+      setScreen("menu");
+    }
+  };
+
+  const removeEmployee = () => {
+    const index = employees.findIndex((emp) => emp.id === removeId);
+    if (index !== -1) {
+      const removed = employees[index];
+      setEmployees(employees.filter((emp) => emp.id !== removeId));
+      setMessage(`Employee ${removed.name} (ID: ${removed.id}) removed successfully.`);
+    } else {
+      setMessage(`Employee with ID ${removeId} not found.`);
+    }
+    setRemoveId("");
+    setScreen("menu");
+  };
+
+  const cliStyle = {
+    backgroundColor: "black",
+    color: "white",
+    fontFamily: "monospace",
+    padding: "20px",
+    minHeight: "100vh"
+  };
+
+  return (
+    <div style={cliStyle}>
+      {screen === "menu" && (
+        <>
+          <h3>Employee Management System</h3>
+          <p>1. Add Employee</p>
+          <p>2. List Employees</p>
+          <p>3. Remove Employee</p>
+          <p>4. Exit</p>
+          <p style={{ marginTop: "10px" }}>Enter your choice:</p>
+          <button onClick={() => setScreen("add")}>1</button>{" "}
+          <button onClick={() => setScreen("list")}>2</button>{" "}
+          <button onClick={() => setScreen("remove")}>3</button>{" "}
+          <button onClick={() => setMessage("Exiting Employee Management System...")}>
+            4
+          </button>
+          {message && <p style={{ marginTop: "15px" }}>{message}</p>}
+        </>
+      )}
+      {screen === "list" && (
+        <>
+          <h3>Employee List:</h3>
+          {employees.length === 0 ? (
+            <p>No employees found.</p>
+          ) : (
+            employees.map((emp, index) => (
+              <p key={emp.id}>
+                {index + 1}. Name: {emp.name}, ID: {emp.id}
+              </p>
+            ))
+          )}
+          <button onClick={() => setScreen("menu")}>Back</button>
+        </>
+      )}
+      {screen === "add" && (
+        <>
+          <p>Enter employee name:</p>
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+          <p>Enter employee ID:</p>
+          <input
+            type="text"
+            value={newId}
+          />
+          <br />
+          <button onClick={addEmployee} style={{ marginTop: "10px" }}>
+            Add
+          </button>{" "}
+          <button onClick={() => setScreen("menu")}>Cancel</button>
+        </>
+      )}
+      {screen === "remove" && (
+        <>
+          <p>Enter employee ID to remove:</p>
+          <input
+            type="text"
+            value={removeId}
+            onChange={(e) => setRemoveId(e.target.value)}
+          />
+          <br />
+          <button onClick={removeEmployee} style={{ marginTop: "10px" }}>
+            Remove
+          </button>{" "}
+          <button onClick={() => setScreen("menu")}>Cancel</button>
+        </>
+      )}
+    </div>
+  );
+}
