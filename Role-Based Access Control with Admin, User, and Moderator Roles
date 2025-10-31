@@ -1,0 +1,216 @@
+✅ main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+
+✅ App.jsx
+import React, { useState } from "react";
+import "./App.css";
+
+function App() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [role, setRole] = useState("");
+  const [message, setMessage] = useState("");
+
+  // 🔐 LOGIN FUNCTION
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setToken(data.token);
+        localStorage.setItem("token", data.token);
+        setMessage("✅ Login successful!");
+      } else {
+        setMessage(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Server error");
+    }
+  };
+
+  // 🧾 FETCH FUNCTION (for all protected routes)
+  const handleRequest = async (endpoint) => {
+    try {
+      const res = await fetch(`http://localhost:3000/${endpoint}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setRole(data.user.role);
+        setMessage(`✅ ${data.message}`);
+      } else {
+        setMessage(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Error fetching data");
+    }
+  };
+
+  // 🚪 LOGOUT FUNCTION
+  const handleLogout = () => {
+    setToken("");
+    localStorage.removeItem("token");
+    setMessage("Logged out successfully");
+  };
+
+  return (
+    <div className="container">
+      <h1>Role-Based Access Control (RBAC) 🔐</h1>
+
+      {/* Login Form */}
+      <div className="login-box">
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+
+      {/* Action Buttons */}
+      {token && (
+        <div className="routes-box">
+          <h3>🔒 Protected Routes</h3>
+          <button onClick={() => handleRequest("admin-dashboard")}>
+            Access Admin Dashboard
+          </button>
+          <button onClick={() => handleRequest("moderator-panel")}>
+            Access Moderator Panel
+          </button>
+          <button onClick={() => handleRequest("user-profile")}>
+            Access User Profile
+          </button>
+        </div>
+      )}
+
+      {/* Display Messages */}
+      <p className="message">{message}</p>
+
+      {/* Display Role */}
+      {role && (
+        <div className="role-box">
+          <p>
+            <strong>Logged in as:</strong> {role}
+          </p>
+        </div>
+      )}
+
+      {/* Display Token */}
+      {token && (
+        <div className="token-box">
+          <strong>JWT Token:</strong>
+          <p>{token}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+✅ App.css
+.container {
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  padding: 40px;
+  color: #333;
+}
+
+.login-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 280px;
+  margin: 20px auto;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.routes-box {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.role-box {
+  background-color: #f5f5f5;
+  padding: 8px;
+  border-radius: 8px;
+  width: 300px;
+  margin: 15px auto;
+}
+
+.token-box {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  width: 600px;
+  margin-inline: auto;
+  text-align: left;
+  word-break: break-all;
+}
+
+✅ index.css
+body {
+  margin: 0;
+  background-color: #fdfdfd;
+}
